@@ -6,7 +6,7 @@ var missles = [];
 var incomingMissles = [];
 
 function setup() {
-    createCanvas(windowWidth * .95, windowHeight * .95);
+    createCanvas(800, 600);
     socket = io.connect('https://guccitankgang888.herokuapp.com/' || 'http://localhost:3000');
     opponentTank = new Tank(30, 20, false);
     playerTank = new Tank(30, height - height * .0625 - 20, true);
