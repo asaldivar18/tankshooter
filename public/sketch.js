@@ -7,7 +7,7 @@ var incomingMissles = [];
 
 function setup() {
     createCanvas(windowWidth * .95, windowHeight * .95);
-    socket = io.connect('http://localhost:3000');
+    socket = io.connect(process.env.PORT || 'http://localhost:3000');
     opponentTank = new Tank(30, 20, false);
     playerTank = new Tank(30, height - height * .0625 - 20, true);
     socket.on("connect", function() {
