@@ -14,7 +14,7 @@ var kills = 0
 var deaths = 0;
 
 function setup() {
-    var canvas = createCanvas(width * .50, height * .50);
+    var canvas = createCanvas(screen.width * .50, screen.height * .50);
     canvas.parent("Container")
     socket = io.connect('https://guccitankgang888.herokuapp.com/' || 'http://localhost:3000');
     init();
