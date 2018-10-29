@@ -3,18 +3,22 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 
+
 app.use(express.static(__dirname + "/public"));
 app.get("/", function(req, res) {
     res.sendFile(__dirname + "/index.html");
 })
 io.sockets.on('connection', socket => {
+
     console.log("new connection: " + socket.id)
     socket.on("incomingTank", data => {
         socket.broadcast.emit("incomingTank", data)
     })
     socket.on("incomingMissles", data => {
+        console.log(data)
         socket.broadcast.emit("incomingMissles", data);
     })
+
 
 })
 http.listen(process.env.PORT || 3000, function() {

@@ -1,44 +1,100 @@
-// Keep track of our socket connection
+// Tank
+// Implementing sockets.io & p5.js
+// Adrian Saldivar 
+// October 27 2018
+
+// Global Variables
 var socket;
 var opponentTank;
 var playerTank;
 var missles = [];
 var incomingMissles = [];
+var isConnected;
+var kills = 0
+var deaths = 0;
 
 function setup() {
-    createCanvas(800, 600);
+    var canvas = createCanvas(screen.width * .50, screen.height * .50);
+    canvas.parent("Container")
     socket = io.connect('https://guccitankgang888.herokuapp.com/' || 'http://localhost:3000');
+    init();
+}
+/**
+ * Setup Tanks, and websocket connections
+ */
+function init() {
     opponentTank = new Tank(30, 20, false);
     playerTank = new Tank(30, height - height * .0625 - 20, true);
+
     socket.on("connect", function() {
         strokeWeight(10)
     })
     socket.on("incomingTank", tank => {
-        //console.log(tank.tank.xpos);
         opponentTank.xpos = tank.tank.xpos
+        opponentTank.health = tank.tank.health
+        if (tank.tank.health == 100.1) {
+            document.getElementById("kills").innerHTML = ++kills
+        }
+        document.getElementById("oHealth").innerHTML = Math.floor(tank.tank.health)
+        document.getElementById("oHealth").style.width = Math.floor(tank.tank.health) + "%";
+
     })
     socket.on("incomingMissles", incoming => {
-        //console.log(incoming)
-        var tmp = new Missle(incoming.x, incoming.y, incoming.isPlayer)
-        incomingMissles.push(tmp);
+        var missle = new Missle(incoming.x, incoming.y, incoming.isPlayer)
+        incomingMissles.push(missle);
     })
-    setInterval(createMissles, 1000);
+
+    setInterval(createMissles, 250);
 }
 
+/**
+ * Updates Canvas
+ */
 function draw() {
     clear()
-    background(255, 0, 160);
+    background(51, 204, 51)
+
     playerTank.display()
     opponentTank.display()
     for (let i = 0; i < missles.length; i++) {
         missles[i].display()
         missles[i].move();
-        //console.log(missles[i])
+        if (checkContact(missles[i]))
+            missles.shift();
     }
     for (let i = 0; i < incomingMissles.length; i++) {
         incomingMissles[i].display()
         incomingMissles[i].move();
     }
+    if (incomingMissles.length > 100)
+        incomingMissles.shift();
+
+    var contact = incomingMissles.filter(value => {
+        if (value.y == playerTank.ypos &&
+            value.x > playerTank.xpos &&
+            value.x < playerTank.xpos + ((width * .125 / 2) * 2)
+        ) {
+            console.log("hit")
+            playerTank.hit(Math.floor(Math.random() * 10) + 5)
+            var incomingTank = {
+                tank: playerTank
+            }
+            socket.emit("incomingTank", incomingTank);
+            incomingMissles.shift();
+
+        } else if (value.y > screen.height * .50) {
+            incomingMissles.shift()
+        }
+    })
+    setupHandlers();
+}
+
+
+
+/**
+ * Setup key handlers & listeners  
+ */
+function setupHandlers() {
     if (keyIsDown(LEFT_ARROW)) {
         playerTank.moveLeft()
         var incomingTank = {
@@ -46,6 +102,7 @@ function draw() {
         }
         socket.emit("incomingTank", incomingTank);
     }
+
     if (keyIsDown(RIGHT_ARROW)) {
         playerTank.moveRight();
         var incomingTank = {
@@ -55,86 +112,29 @@ function draw() {
     }
 }
 
-function createMissles() {
+/**
+ * Fires missles from playertank and send missle obj to server
+ */
+function mousePressed() {
     missles.push(new Missle(playerTank.point.x, playerTank.point.y, playerTank.isPlayer));
-    var tmp = new Missle(playerTank.point.x, opponentTank.point.y, false)
-    socket.emit("incomingMissles", tmp);
+    socket.emit("incomingMissles", new Missle(playerTank.point.x, opponentTank.point.y, false));
 }
 
+function createMissles() {
 
-/**
- * Missle
- */
-class Missle {
-    constructor(x, y, isPlayer) {
-        this.isPlayer = isPlayer;
-        this.x = x;
-        this.y = y;
-        //console.log(this.tank);
-
-    }
-    display() {
-        if (this.isPlayer) {
-            ellipse(this.x, this.y, 6, 6)
-        } else {
-            ellipse(this.x, this.y, 6, 6)
-
-        }
-    }
-    move() {
-        if (this.isPlayer) {
-            this.y -= 1;
-        } else {
-            this.y += 1;
-        };
-    }
 }
 
 /**
- * Point
+ * Check if player missle made contact with opponent Tank
+ * @param {Missle} value 
  */
-class Point {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
+function checkContact(value) {
+    if (value.y == opponentTank.ypos &&
+        value.x > opponentTank.xpos &&
+        value.x < opponentTank.xpos + ((width * .125 / 2) * 2)) {
+        return true
+    } else if (value.y > screen.height * .50) {
+        return true
     }
-}
-
-/**
- * Tank
- */
-class Tank {
-    constructor(xpos, ypos, isPlayer) {
-        this.xpos = xpos;
-        this.ypos = ypos;
-        this.isPlayer = isPlayer;
-        this.updatePoints();
-    }
-    display() {
-        if (this.isPlayer) {
-            rect(this.xpos, this.ypos, width * .125, height * .0625);
-            line(this.xpos + (width * .125 / 2), this.ypos, this.xpos + (width * .125 / 2), this.ypos - ((width * 0.125) / 4))
-        } else {
-            rect(this.xpos, this.ypos, width * .125, height * .0625);
-            line(this.xpos + (width * .125 / 2), this.ypos + height * .0625, this.xpos + (width * .125 / 2), this.ypos + height * .0625 + ((width * .125) / 4))
-        }
-    }
-    updatePoints() {
-        if (this.isPlayer) {
-            this.point = new Point(this.xpos + (width * .125 / 2), this.ypos - ((width * 0.125) / 4))
-        } else {
-            this.point = new Point(this.xpos + (width * .125 / 2), this.ypos + height * .0625 + ((width * .125) / 4))
-        }
-    }
-
-    moveLeft() {
-        this.xpos = this.xpos - 30;
-        this.updatePoints()
-        if (this.xpos < 0) this.xpos = 0;
-    }
-    moveRight() {
-        this.xpos = this.xpos + 30;
-        this.updatePoints();
-        if (this.xpos > width - width * .125) this.xpos = width - width * .125;
-    }
+    return false;
 }
