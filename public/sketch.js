@@ -33,6 +33,8 @@ function setup() {
  */
 function init() {
     start()
+    button.addEventListener("click", createPlayer)
+
 
     socket.on("connect", function() {
         let numClients;
@@ -41,13 +43,11 @@ function init() {
 
 
     socket.on("created", data => {
-        button.addEventListener("click", createPlayer)
 
 
         isHost = true
     })
     socket.on("joined", data => {
-        button.addEventListener("click", createPlayer)
 
 
         isHost = false
