@@ -4,31 +4,86 @@
 // October 27 2018
 
 // Global Variables
+var player;
+var opponent;
 var socket;
 var opponentTank;
 var playerTank;
 var missles = [];
 var incomingMissles = [];
-var isConnected;
+var isConnected = false;
 var kills = 0
 var deaths = 0;
+var input, button, greeting;
+var username
+var name
+var isHost
+
 
 function setup() {
     var canvas = createCanvas(screen.width * .50, screen.height * .50);
     canvas.parent("Container")
-    socket = io.connect('https://guccitankgang888.herokuapp.com/' || 'http://localhost:3000');
+    socket = io.connect()
+        // socket = io.connect('https://guccitankgang888.herokuapp.com/' || 'http://localhost:3000');
     init();
 }
 /**
  * Setup Tanks, and websocket connections
  */
 function init() {
-    opponentTank = new Tank(30, 20, false);
-    playerTank = new Tank(30, height - height * .0625 - 20, true);
 
     socket.on("connect", function() {
+        let numClients;
         strokeWeight(10)
     })
+
+
+    socket.on("created", data => {
+        start()
+        button.addEventListener("click", createPlayer)
+
+
+        isHost = true
+    })
+    socket.on("joined", data => {
+        start()
+        button.addEventListener("click", createPlayer)
+
+
+        isHost = false
+
+    })
+    socket.on("dc", data => {
+        if (isConnected) {
+            var message = document.createElement("p")
+            message.style.fontWeight = "bold"
+            message.innerHTML = "Opponent has left! You win!"
+            document.getElementById("matchup").appendChild(message)
+        }
+        isConnected = false
+        $("#game").hide();
+    })
+    socket.on("full", () => {
+        var game = document.getElementById("game")
+        var message = document.createElement("p")
+        var btn = document.createElement("button")
+        btn.classList.add("btn", "btn-danger")
+        game.innerHTML = ""
+        message.style.color = "red"
+        message.innerHTML = "Game is full (Maximum 2 per room)\n Please refresh!"
+        btn.addEventListener("click", () => {
+            location.reload()
+        })
+        btn.innerHTML = "Refresh page"
+
+        $("#game").show()
+        game.appendChild(message);
+        game.appendChild(btn)
+    })
+
+
+
+
     socket.on("incomingTank", tank => {
         opponentTank.xpos = tank.tank.xpos
         opponentTank.health = tank.tank.health
@@ -44,6 +99,7 @@ function init() {
         incomingMissles.push(missle);
     })
 
+
     setInterval(createMissles, 250);
 }
 
@@ -53,40 +109,109 @@ function init() {
 function draw() {
     clear()
     background(51, 204, 51)
+    if (isConnected) {
+        playerTank.display()
+        opponentTank.display()
 
-    playerTank.display()
-    opponentTank.display()
-    for (let i = 0; i < missles.length; i++) {
-        missles[i].display()
-        missles[i].move();
-        if (checkContact(missles[i]))
-            missles.shift();
-    }
-    for (let i = 0; i < incomingMissles.length; i++) {
-        incomingMissles[i].display()
-        incomingMissles[i].move();
-    }
-    if (incomingMissles.length > 100)
-        incomingMissles.shift();
-
-    var contact = incomingMissles.filter(value => {
-        if (value.y == playerTank.ypos &&
-            value.x > playerTank.xpos &&
-            value.x < playerTank.xpos + ((width * .125 / 2) * 2)
-        ) {
-            console.log("hit")
-            playerTank.hit(Math.floor(Math.random() * 10) + 5)
-            var incomingTank = {
-                tank: playerTank
-            }
-            socket.emit("incomingTank", incomingTank);
+        for (let i = 0; i < missles.length; i++) {
+            missles[i].display()
+            missles[i].move();
+            if (checkContact(missles[i]))
+                missles.shift();
+        }
+        for (let i = 0; i < incomingMissles.length; i++) {
+            incomingMissles[i].display()
+            incomingMissles[i].move();
+        }
+        if (incomingMissles.length > 100)
             incomingMissles.shift();
 
-        } else if (value.y > screen.height * .50) {
-            incomingMissles.shift()
-        }
+        var contact = incomingMissles.filter(value => {
+            if (value.y == playerTank.ypos &&
+                value.x > playerTank.xpos &&
+                value.x < playerTank.xpos + ((width * .125 / 2) * 2)
+            ) {
+                console.log("hit")
+                playerTank.hit(Math.floor(Math.random() * 10) + 5)
+                var incomingTank = {
+                    tank: playerTank
+                }
+                socket.emit("incomingTank", incomingTank);
+                incomingMissles.shift();
+
+            } else if (value.y > screen.height * .50) {
+                incomingMissles.shift()
+            }
+        })
+        setupHandlers();
+
+    } else {
+
+
+        // input = createInput();
+        // button = createButton('submit');
+        // greeting = createElement('h2', 'Enter your name');
+        //input.style.fontsize = '20px'
+        //input.
+        // input.position((windowWidth - width) / 2, (windowHeight) / 2);
+        // button.position(input.x + input.width / 3, input.y + input.height * 2)
+        // greeting.position(input.x, input.y - input.height * 2);
+        // input.parent("start")
+        // button.mousePressed(createPlayer);
+
+
+
+
+        textAlign(CENTER);
+        textSize(50);
+    }
+}
+
+function start() {
+    input = document.createElement("input")
+    button = document.createElement("button")
+    greeting = document.createElement("h2")
+    var breakln = document.createElement("br")
+    greeting.innerText = "Enter name"
+    button.innerHTML = "Enter Battlefield"
+    input.setAttribute("id", "playername")
+    button.setAttribute("id", "namebtn")
+
+
+    document.getElementById("start").appendChild(greeting)
+    document.getElementById("start").appendChild(input)
+    document.getElementById("start").appendChild(breakln)
+    document.getElementById("start").appendChild(button)
+}
+
+function getOpponent() {
+
+    return name
+}
+
+function createPlayer() {
+    $("#start").hide()
+    username = input.value
+    $("#matchup").html(username)
+    opponentTank = new Tank(30, 20, false);
+    playerTank = new Tank(30, height - height * .0625 - 20, true);
+    opponentTank.display()
+    playerTank.display()
+        // input.style("display", "none");
+        // button.style("display", "none");
+        // greeting.style("display", "none");
+    $("#game").show();
+    socket.on("host", name => {
+        $("#matchup").html(name)
     })
-    setupHandlers();
+    socket.emit("username", username);
+
+
+    isConnected = true
+
+
+
+
 }
 
 
@@ -116,8 +241,10 @@ function setupHandlers() {
  * Fires missles from playertank and send missle obj to server
  */
 function mousePressed() {
-    missles.push(new Missle(playerTank.point.x, playerTank.point.y, playerTank.isPlayer));
-    socket.emit("incomingMissles", new Missle(playerTank.point.x, opponentTank.point.y, false));
+    if (isConnected) {
+        missles.push(new Missle(playerTank.point.x, playerTank.point.y, playerTank.isPlayer));
+        socket.emit("incomingMissles", new Missle(playerTank.point.x, opponentTank.point.y, false));
+    }
 }
 
 function createMissles() {

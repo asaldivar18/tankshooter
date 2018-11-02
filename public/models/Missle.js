@@ -28,9 +28,9 @@ class Missle {
     }
     move() {
         if (this.isPlayer) {
-            this.y -= 1;
+            this.y -= 2;
         } else {
-            this.y += 1;
+            this.y += 2;
         };
     }
 }
