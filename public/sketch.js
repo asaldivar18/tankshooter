@@ -32,6 +32,7 @@ function setup() {
  * Setup Tanks, and websocket connections
  */
 function init() {
+    start()
 
     socket.on("connect", function() {
         let numClients;
@@ -40,14 +41,12 @@ function init() {
 
 
     socket.on("created", data => {
-        start()
         button.addEventListener("click", createPlayer)
 
 
         isHost = true
     })
     socket.on("joined", data => {
-        start()
         button.addEventListener("click", createPlayer)
 
 
