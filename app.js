@@ -15,12 +15,14 @@ app.get("/", function(req, res) {
 
 
 io.sockets.on('connection', socket => {
-    //console.log(room.numClients)
-    if (room.numClients == 0) {
+
+    socket.join(room.getRoom())
+        //console.log(room.numClients)
+    if (room.numClients == 1) {
         socket.join(room.createRoom());
         socket.emit('created', room);
     } else
-    if (room.numClients == 1) {
+    if (room.numClients == 2) {
         io.sockets.in(room.getRoom()).emit('join', room.getRoom());
         socket.join(room.getRoom());
         var roominfo = {
@@ -48,14 +50,14 @@ io.sockets.on('connection', socket => {
     })
 
     socket.on("username", data => {
-        //console.log(data)
+        console.log(user)
         user.push(data)
         if (user.length > 1)
             matchup = user[0] + " vs." + user[1]
         else
             matchup = "Waiting for 1 player..."
-            //socket.broadcast.emit("username", data);
-        io.to(room.getRoom()).emit("host", matchup)
+        socket.broadcast.emit("host", matchup);
+        //io.to(room.getRoom()).emit("host", matchup)
     })
 
 
@@ -63,7 +65,8 @@ io.sockets.on('connection', socket => {
         room.numClients = room.numClients - 1;
         matchup = ""
         user = []
-        io.to(room.getRoom()).emit("dc", user)
+        socket.broadcast.emit("dc", user);
+        //io.to(room.getRoom()).emit("dc", user)
 
     });
 

@@ -23,9 +23,9 @@ var isHost
 function setup() {
     var canvas = createCanvas(screen.width * .50, screen.height * .50);
     canvas.parent("Container")
-        //socket = io.connect()
+    socket = io.connect()
 
-    socket = io.connect('https://guccitankgang888.herokuapp.com/' || 'http://localhost:3000');
+    //socket = io.connect('https://guccitankgang888.herokuapp.com/' || 'http://localhost:3000');
     init();
 }
 /**
@@ -52,6 +52,10 @@ function init() {
 
         isHost = false
 
+    })
+
+    socket.on("matchup", data => {
+        console.log(data)
     })
     socket.on("dc", data => {
         if (isConnected) {
@@ -166,23 +170,17 @@ function start() {
     document.getElementById("start").appendChild(button)
 }
 
-function getOpponent() {
-
-    return name
-}
 
 function createPlayer() {
     $("#start").hide()
     username = input.value
-    $("#matchup").html(username)
+        //$("#matchup").html(username)
     opponentTank = new Tank(30, 20, false);
     playerTank = new Tank(30, height - height * .0625 - 20, true);
     opponentTank.display()
     playerTank.display()
-        // input.style("display", "none");
-        // button.style("display", "none");
-        // greeting.style("display", "none");
     $("#game").show();
+
     socket.on("host", name => {
         $("#matchup").html(name)
     })
