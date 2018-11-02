@@ -63,24 +63,6 @@ function init() {
         isConnected = false
         $("#game").hide();
     })
-    socket.on("full", () => {
-        var game = document.getElementById("game")
-        var message = document.createElement("p")
-        var btn = document.createElement("button")
-        btn.classList.add("btn", "btn-danger")
-        game.innerHTML = ""
-        message.style.color = "red"
-        message.innerHTML = "Game is full (Maximum 2 per room)\n Please refresh!"
-        btn.addEventListener("click", () => {
-            location.reload()
-        })
-        btn.innerHTML = "Refresh page"
-
-        $("#game").show()
-        game.appendChild(message);
-        game.appendChild(btn)
-    })
-
 
 
 

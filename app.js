@@ -30,7 +30,7 @@ io.sockets.on('connection', socket => {
         socket.emit('joined', room.getRoom().user);
         console.log("test")
     } else { // max two clients
-        socket.emit('full', room.getRoom());
+        //socket.emit('full', room.getRoom());
     }
 
 
