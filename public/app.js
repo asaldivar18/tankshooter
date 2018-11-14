@@ -17,7 +17,7 @@ $(function() {
         var email = $("#aemail").val()
         var password = $("#apassword").val()
         firebase.auth().signInWithEmailAndPassword(email, password)
-            .catch(function(error) {
+            .catch((error) => {
                 // Handle Errors here.
                 var errorCode = error.code;
                 var errorMessage = error.message;
@@ -27,6 +27,8 @@ $(function() {
                     alert(errorMessage);
                 }
                 console.log(error);
+            }).then((user) => {
+
             });
     })
 
@@ -47,6 +49,11 @@ $(function() {
                 alert(errorMessage);
             }
             console.log(error);
+        }).then(() => {
+            $("#caccount").hide()
+            firebase.auth().currentUser.updateProfile({
+                displayName: name
+            })
         });
 
 
@@ -72,6 +79,7 @@ $(function() {
 
     $("#logout").on("click", a => {
         firebase.auth().signOut()
+
     })
 
     firebase.auth().onAuthStateChanged(function(user) {
@@ -80,10 +88,12 @@ $(function() {
             $("#start").show();
             $("#logout").show();
             console.log(user)
+            uid = user.uid
         } else {
             $("#login").show();
             $("#start").hide()
-            $("#logout").show();
+            $("#logout").hide();
+            $("#game").hide()
         }
     });
 

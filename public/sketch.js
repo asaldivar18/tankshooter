@@ -18,6 +18,7 @@ var input, roomInput, button, greeting, roomgreeting;
 var username, roomname;
 var name;
 var isHost;
+var uid
 
 
 function setup() {
@@ -58,10 +59,31 @@ function init() {
     })
     socket.on("dc", data => {
         if (isConnected) {
+            console.log(uid)
+
             var message = document.createElement("p")
+            var message2 = document.createElement("p")
+            message2.innerHTML = "Saving score..."
             message.style.fontWeight = "bold"
             message.innerHTML = "Opponent has left! You win!"
             document.getElementById("matchup").appendChild(message)
+            document.getElementById("matchup").appendChild(message2)
+            var result = {
+                "uid": uid,
+                "kills": kills,
+                "deaths": deaths,
+                "token": "adrian86023152"
+            }
+            $.ajax({
+                type: "POST",
+                data: JSON.stringify(result),
+                contentType: "application/JSON",
+                url: "api/1.0",
+                success: () => {
+                    message2.innerHTML = "Score saved"
+                }
+            })
+
         }
         isConnected = false
         $("#game").hide();
@@ -154,22 +176,16 @@ function draw() {
 }
 
 function start() {
-    input = document.createElement("input")
     roomInput = document.createElement("input")
     button = document.createElement("button")
-    greeting = document.createElement("h2")
     roomgreeting = document.createElement("h2")
     var breakln = document.createElement("br")
-    greeting.innerText = "Enter name"
     roomgreeting.innerText = "Enter room"
     button.innerHTML = "Enter Battlefield"
-    input.setAttribute("id", "playername")
     roomInput.setAttribute("id", "playerid")
     button.setAttribute("id", "namebtn")
 
 
-    document.getElementById("start").appendChild(greeting)
-    document.getElementById("start").appendChild(input)
     document.getElementById("start").appendChild(roomgreeting)
     document.getElementById("start").appendChild(roomInput)
     document.getElementById("start").appendChild(breakln)
@@ -178,8 +194,14 @@ function start() {
 
 
 function createPlayer() {
-    username = input.value
-    roomname = roomInput.value
+    var user = firebase.auth().currentUser;
+
+    if (user != null) {
+        user.providerData.forEach(function(profile) {
+            username = profile.displayName;
+            roomname = roomInput.value;
+        });
+    }
     let data = {
         "room": roomname,
         "username": username
