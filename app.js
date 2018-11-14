@@ -2,7 +2,7 @@ var express = require("express");
 var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
-var room = require("./public/models/Room")
+//var room = require("./public/models/Room")
 var api = require("./routes/api/score")
     //var user = []
     //var matchup = ""
@@ -18,60 +18,56 @@ app.get("/", function(req, res) {
 app.use('/api/', api)
 io.sockets.on('connection', socket => {
 
-    socket.join(room.getRoom())
-    console.log(room.numClients)
-    if (room.numClients == 1) {
 
-        socket.join(room.createRoom());
-        socket.emit('created', room);
-    } else
-    if (room.numClients == 2) {
-        io.sockets.in(room.getRoom()).emit('join', room.getRoom());
-        socket.join(room.getRoom());
-        var roominfo = {
-            room: room.getRoom(),
-            user: user
+    socket.on("joinGame", data => {
+        let room = data["room"];
+        let username = data["username"];
+        let clientNum = io.sockets.adapter.rooms[room];
+        console.log(clientNum);
+        if (typeof clientNum !== "undefined") {
+            if (clientNum.length == 1) {
+                for (var clientId in io.sockets.adapter.rooms[room].sockets) {
+                    var emeny = io.sockets.connected[clientId].nickname;
+                }
+                console.log("Here");
+                socket.join(room);
+                socket.nickname = username;
+                matchup = username + " VS " + emeny;
+                io.to(room).emit("host", matchup)
+                io.to(room).emit("EnterGame", "OK");
+                list[socket.id] = room;
+            } else if (clientNum.length >= 2) {
+                socket.emit("Full", "Full");
+            }
+        } else {
+            socket.join(room);
+            socket.nickname = username;
+            console.log("There");
+            matchup = "Waiting for the player";
+            io.to(room).emit("host", matchup);
+            io.to(room).emit("EnterGame", "OK");
+            list[socket.id] = room;
         }
-        socket.emit('joined', room.getRoom().user);
-        //console.log("test")
-    } else { // max two clients
-        //console.log("aaa")
-        socket.emit('full', room.getRoom());
-    }
 
+    })
 
-
-    room.numClients = room.numClients + 1;
 
     socket.on("incomingTank", data => {
-        socket.broadcast.emit("incomingTank", data)
-
+        socket.to(data.room).emit("incomingTank", data)
     })
 
     socket.on("incomingMissles", data => {
-        console.log(data)
-        socket.broadcast.emit("incomingMissles", data);
+        console.log(data);
+        socket.to(data.room).emit("incomingMissles", data);
     })
 
-    socket.on("username", data => {
-        console.log(user)
-        user.push(data)
-        if (user.length > 1)
-            matchup = user[0] + " vs." + user[1]
-        else
-            matchup = "Waiting for 1 player..."
-        socket.broadcast.emit("host", matchup);
-        //io.to(room.getRoom()).emit("host", matchup)
-    })
+
 
 
     socket.on('disconnect', function() {
-        room.numClients = room.numClients - 1;
-        matchup = ""
-        user = []
-        socket.broadcast.emit("dc", user);
-        //io.to(room.getRoom()).emit("dc", user)
-
+        let room = list[socket.id];
+        console.log("dc" + room);
+        io.to(room).emit("dc", "dc");
     });
 
 })

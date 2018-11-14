@@ -14,10 +14,10 @@ var incomingMissles = [];
 var isConnected = false;
 var kills = 0
 var deaths = 0;
-var input, button, greeting;
-var username
-var name
-var isHost
+var input, roomInput, button, greeting, roomgreeting;
+var username, roomname;
+var name;
+var isHost;
 
 
 function setup() {
@@ -53,32 +53,15 @@ function init() {
         isHost = false
 
     })
-
-    socket.on("full", data => {
-        console.log("room is full")
-        console.log(data)
-    })
-
     socket.on("matchup", data => {
         console.log(data)
     })
     socket.on("dc", data => {
         if (isConnected) {
             var message = document.createElement("p")
-            var submitscore = document.createElement("button");
-            submitscore.classList.add("btn", "btn-success");
-            submitscore.innerHTML = "Submit Score to BadgeBook"
-            submitscore.addEventListener("click", () => {
-                $.post("/api/1.0/", (data) => {
-
-                    console.log(data);
-                })
-            })
             message.style.fontWeight = "bold"
             message.innerHTML = "Opponent has left! You win!"
             document.getElementById("matchup").appendChild(message)
-            document.getElementById("matchup").appendChild(submitscore)
-
         }
         isConnected = false
         $("#game").hide();
@@ -97,7 +80,7 @@ function init() {
 
     })
     socket.on("incomingMissles", incoming => {
-        var missle = new Missle(incoming.x, incoming.y, incoming.isPlayer)
+        var missle = new Missle(incoming.missle.x, incoming.missle.y, incoming.missle.isPlayer)
         incomingMissles.push(missle);
     })
 
@@ -136,13 +119,14 @@ function draw() {
                 console.log("hit")
                 playerTank.hit(Math.floor(Math.random() * 10) + 5)
                 var incomingTank = {
-                    tank: playerTank
+                    tank: playerTank,
+                    room: roomname
                 }
                 socket.emit("incomingTank", incomingTank);
                 incomingMissles.shift();
 
             } else if (value.y > screen.height * .50) {
-                incomingMissles.shift()
+                incomingMissles.shift();
             }
         })
         setupHandlers();
@@ -171,42 +155,53 @@ function draw() {
 
 function start() {
     input = document.createElement("input")
+    roomInput = document.createElement("input")
     button = document.createElement("button")
     greeting = document.createElement("h2")
+    roomgreeting = document.createElement("h2")
     var breakln = document.createElement("br")
     greeting.innerText = "Enter name"
+    roomgreeting.innerText = "Enter room"
     button.innerHTML = "Enter Battlefield"
     input.setAttribute("id", "playername")
+    roomInput.setAttribute("id", "playerid")
     button.setAttribute("id", "namebtn")
 
 
     document.getElementById("start").appendChild(greeting)
     document.getElementById("start").appendChild(input)
+    document.getElementById("start").appendChild(roomgreeting)
+    document.getElementById("start").appendChild(roomInput)
     document.getElementById("start").appendChild(breakln)
     document.getElementById("start").appendChild(button)
 }
 
 
 function createPlayer() {
-    $("#start").hide()
     username = input.value
-        //$("#matchup").html(username)
-    opponentTank = new Tank(30, 20, false);
-    playerTank = new Tank(30, height - height * .0625 - 20, true);
-    opponentTank.display()
-    playerTank.display()
-    $("#game").show();
-
-    socket.on("host", name => {
-        $("#matchup").html(name)
+    roomname = roomInput.value
+    let data = {
+        "room": roomname,
+        "username": username
+    }
+    socket.emit("joinGame", data);
+    socket.on("Full", data => {
+        alert("Room is full");
     })
-    socket.emit("username", username);
-
-
-    isConnected = true
-
-
-
+    socket.on("EnterGame", data => {
+            opponentTank = new Tank(30, 20, false);
+            playerTank = new Tank(30, height - height * .0625 - 20, true);
+            opponentTank.display()
+            playerTank.display()
+            $("#game").show();
+            $("#start").hide()
+            isConnected = true;
+        })
+        //$("#matchup").html(username)
+    socket.on("host", name => {
+            $("#matchup").html(name)
+        })
+        //socket.emit("username", username);
 
 }
 
@@ -219,7 +214,8 @@ function setupHandlers() {
     if (keyIsDown(LEFT_ARROW)) {
         playerTank.moveLeft()
         var incomingTank = {
-            tank: playerTank
+            tank: playerTank,
+            room: roomname
         }
         socket.emit("incomingTank", incomingTank);
     }
@@ -227,7 +223,8 @@ function setupHandlers() {
     if (keyIsDown(RIGHT_ARROW)) {
         playerTank.moveRight();
         var incomingTank = {
-            tank: playerTank
+            tank: playerTank,
+            room: roomname
         }
         socket.emit("incomingTank", incomingTank);
     }
@@ -239,7 +236,12 @@ function setupHandlers() {
 function mousePressed() {
     if (isConnected) {
         missles.push(new Missle(playerTank.point.x, playerTank.point.y, playerTank.isPlayer));
-        socket.emit("incomingMissles", new Missle(playerTank.point.x, opponentTank.point.y, false));
+        let missleobj = new Missle(playerTank.point.x, opponentTank.point.y, false);
+        let obj = {
+            missle: missleobj,
+            room: roomname
+        }
+        socket.emit("incomingMissles", obj);
     }
 }
 
