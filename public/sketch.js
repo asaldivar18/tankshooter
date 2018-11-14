@@ -54,15 +54,31 @@ function init() {
 
     })
 
+    socket.on("full", data => {
+        console.log("room is full")
+        console.log(data)
+    })
+
     socket.on("matchup", data => {
         console.log(data)
     })
     socket.on("dc", data => {
         if (isConnected) {
             var message = document.createElement("p")
+            var submitscore = document.createElement("button");
+            submitscore.classList.add("btn", "btn-success");
+            submitscore.innerHTML = "Submit Score to BadgeBook"
+            submitscore.addEventListener("click", () => {
+                $.post("/api/1.0/", (data) => {
+
+                    console.log(data);
+                })
+            })
             message.style.fontWeight = "bold"
             message.innerHTML = "Opponent has left! You win!"
             document.getElementById("matchup").appendChild(message)
+            document.getElementById("matchup").appendChild(submitscore)
+
         }
         isConnected = false
         $("#game").hide();

@@ -3,6 +3,7 @@ var app = express();
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 var room = require("./public/models/Room")
+var api = require("./routes/api/score")
 var user = []
 var matchup = ""
 
@@ -13,12 +14,13 @@ app.get("/", function(req, res) {
     res.sendFile(__dirname + "/index.html");
 })
 
-
+app.use('/api/', api)
 io.sockets.on('connection', socket => {
 
     socket.join(room.getRoom())
-        //console.log(room.numClients)
+    console.log(room.numClients)
     if (room.numClients == 1) {
+
         socket.join(room.createRoom());
         socket.emit('created', room);
     } else
@@ -30,9 +32,10 @@ io.sockets.on('connection', socket => {
             user: user
         }
         socket.emit('joined', room.getRoom().user);
-        console.log("test")
+        //console.log("test")
     } else { // max two clients
-        //socket.emit('full', room.getRoom());
+        //console.log("aaa")
+        socket.emit('full', room.getRoom());
     }
 
 
