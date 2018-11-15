@@ -4,8 +4,7 @@ var http = require("http").Server(app);
 var io = require("socket.io")(http);
 //var room = require("./public/models/Room")
 var api = require("./routes/api/score")
-    //var user = []
-    //var matchup = ""
+
 
 var list = {}
 
