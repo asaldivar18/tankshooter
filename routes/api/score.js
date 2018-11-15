@@ -53,6 +53,33 @@ router.post('/1.0/newaccount', (req, res) => {
         })
 })
 
+router.post('/1.0/users', (req, res) => {
+    console.log("yo")
+    var userid = req.headers.uid;
+    var apptoken = req.header.token;
+    //if apptoken is valid
+    var users = []
+    var ref = db.collection("users").get().then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+                if (doc.data().uid == userid)
+                    users.push(doc.data())
+            })
+            //console.log(users)
+            //res.send("foo")
+        if (users.length > 0)
+            res.send(users)
+        else {
+            res.send("unable to find user")
+                //throw "Unable to find user"
+        }
+
+
+    }).catch(e => {
+        res.send(e)
+    })
+
+})
+
 router.post('/1.0', (req, res) => {
     //console.log(req.headers, req.headers.kills)
 
@@ -92,7 +119,7 @@ router.post('/1.0', (req, res) => {
     //     .catch(function(error) {
     //         console.error("Error adding document: ", error);
     //     });
-    res.send("user")
+    res.send("updated")
 })
 
 
