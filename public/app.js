@@ -1,5 +1,9 @@
-auth = firebase.auth()
+var auth = firebase.auth()
+var db = firebase.firestore();
+var user;
+
 $(function() {
+    console.log()
     $("#game").hide();
     $("#start").hide()
     $("#logout").hide()
@@ -36,8 +40,6 @@ $(function() {
         var email = $("#cemail").val()
         var name = $("#cname").val()
         var password = $("#cpw").val()
-        console.log("foo")
-
         firebase.auth().createUserWithEmailAndPassword(
             email, password).catch(function(error) {
             // Handle Errors here.
@@ -49,37 +51,51 @@ $(function() {
                 alert(errorMessage);
             }
             console.log(error);
-        }).then(() => {
-            $("#caccount").hide()
+        }).then((foo) => {
+            //user = foo.user;
+            console.log(auth.currentUser)
+
             firebase.auth().currentUser.updateProfile({
                 displayName: name
             })
+
+            $.ajax({
+                url: "api/1.0/newaccount",
+                type: "POST",
+                data: "asaldivar18",
+                contentType: "application/JSON",
+                headers: {
+                    kills: 0,
+                    deaths: 0,
+                    uid: auth.currentUser.uid,
+                    token: "asaldivar18"
+                },
+                success: () => {
+                    $("#register").hide()
+                }
+            })
+
+
+
+            // db.collection("users").doc(user.uid).set({
+            //         kills: 0,
+            //         deaths: 0,
+            //         uid: user.uid,
+            //         token: adrian123fefe
+            //     })
+            //     .then(function(docRef) {
+            //         console.log("Document written with ID: ", docRef.id);
+            //     })
+            //     .catch(function(error) {
+            //         console.error("Error adding document: ", error);
+            //     });
         });
 
-
-
-
-        // auth.createUser({
-        //     email: emailAddress,
-        //     password: password
-        // }, function(error, authData) {
-        //     if (error) {
-        //         console.log("Error creating user:", error);
-        //     } else {
-        //         // save the user's profile into the database so we can list users,
-        //         // use them in Security and Firebase Rules, and show profiles
-        //         auth.child("users").child(authData.uid).set({
-        //             provider: authData.provider,
-        //             name: userName
-        //         });
-        //     }
-        // });
     })
 
 
     $("#logout").on("click", a => {
         firebase.auth().signOut()
-
     })
 
     firebase.auth().onAuthStateChanged(function(user) {
@@ -87,8 +103,10 @@ $(function() {
             $("#login").hide()
             $("#start").show();
             $("#logout").show();
-            console.log(user)
+            //console.log(user)
+            user = user;
             uid = user.uid
+            console.log(user)
         } else {
             $("#login").show();
             $("#start").hide()

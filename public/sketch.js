@@ -68,17 +68,22 @@ function init() {
             message.innerHTML = "Opponent has left! You win!"
             document.getElementById("matchup").appendChild(message)
             document.getElementById("matchup").appendChild(message2)
-            var result = {
-                "uid": uid,
-                "kills": kills,
-                "deaths": deaths,
-                "token": "adrian86023152"
+
+            var token = {
+                token: "adrian86023152"
             }
+
+
             $.ajax({
-                type: "POST",
-                data: JSON.stringify(result),
-                contentType: "application/JSON",
                 url: "api/1.0",
+                type: "POST",
+                contentType: "application/JSON",
+                headers: {
+                    kills: kills,
+                    deaths: deaths,
+                    uid: uid,
+                    token: token
+                },
                 success: () => {
                     message2.innerHTML = "Score saved"
                 }
@@ -154,22 +159,6 @@ function draw() {
         setupHandlers();
 
     } else {
-
-
-        // input = createInput();
-        // button = createButton('submit');
-        // greeting = createElement('h2', 'Enter your name');
-        //input.style.fontsize = '20px'
-        //input.
-        // input.position((windowWidth - width) / 2, (windowHeight) / 2);
-        // button.position(input.x + input.width / 3, input.y + input.height * 2)
-        // greeting.position(input.x, input.y - input.height * 2);
-        // input.parent("start")
-        // button.mousePressed(createPlayer);
-
-
-
-
         textAlign(CENTER);
         textSize(50);
     }

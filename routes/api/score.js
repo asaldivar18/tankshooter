@@ -10,6 +10,10 @@ firebase.initializeApp({
     projectId: 'tankshooter888'
 });
 
+const db = firebase.firestore();
+db.settings({
+    timestampsInSnapshots: true
+});
 
 //var bodyParser = require('body-parser')
 
@@ -21,34 +25,74 @@ firebase.initializeApp({
  * Get leaderboard
  */
 router.get('/1.0', (req, res) => {
-    res.send("foo")
+    var users = []
+    var ref = db.collection("users").get().then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+                users.push(doc.data())
+                    //console.log(doc.id, " => ", doc.data());
+
+            })
+            //console.log(users)
+            //res.send("foo")
+        res.send(users)
+    }).catch(e => {
+        res.send(e)
+    })
+})
+router.post('/1.0/newaccount', (req, res) => {
+    console.log(req.headers);
+    var user = {
+        uid: req.headers.uid,
+        apptoken: req.headers.token,
+        kills: req.headers.kills,
+        deaths: req.headers.deaths
+    }
+    var ref = db.collection("users").doc(user.uid).set(user).catch(error => console.log(error))
+        .then(() => {
+            res.send(user);
+        })
 })
 
-router.post('/1.0', bodyParser.json(), (req, res) => {
-    console.log(req)
-    var userid = req.body.uid;
-    var apptoken = req.body.token;
-    var kills = req.body.kills;
-    var deaths = req.body.deaths
-    var user = {
-        "uid": userid,
-        "apptoken": apptoken,
-        "kills": kills,
-        "deaths": deaths,
-    }
-    var db = firebase.firestore();
-    db.settings({
-        timestampsInSnapshots: true
-    });
+router.post('/1.0', (req, res) => {
+    //console.log(req.headers, req.headers.kills)
 
-    db.collection("scores").add(user)
-        .then(function(docRef) {
-            console.log("Document written with ID: ", docRef.id);
-        })
-        .catch(function(error) {
-            console.error("Error adding document: ", error);
-        });
-    res.send(user)
+    var userid = req.headers.uid;
+    var apptoken = req.header.token;
+    var kills = req.headers.kills;
+    var deaths = req.headers.deaths
+    var userDoc = db.collection("users").doc(req.headers.uid)
+    var t = db.runTransaction(transaction => {
+        return transaction.get(userDoc)
+            .then(res => {
+                if (!res.exists) {
+                    throw "DOCUMENT NOT EXISTS"
+                }
+                kills = parseInt(res.data().kills) + parseInt(kills)
+                deaths = parseInt(res.data().deaths) + parseInt(deaths)
+                transaction.update(userDoc, {
+                    kills: kills,
+                    deaths: deaths
+                });
+            })
+    }).catch(error => console.log(error))
+
+
+    // var user = {
+    //     uid: userid,
+    //     "apptoken": apptoken,
+    //     "kills": kills,
+    //     "deaths": deaths
+    // }
+
+
+    // db.collection("users").doc(user.uid).set(ser)
+    //     .then(function(docRef) {
+    //         console.log("Document written with ID: ", docRef.id);
+    //     })
+    //     .catch(function(error) {
+    //         console.error("Error adding document: ", error);
+    //     });
+    res.send("user")
 })
 
 
