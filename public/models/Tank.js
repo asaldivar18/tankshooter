@@ -1,4 +1,4 @@
-var socket = io.connect('https://guccitankgang888.herokuapp.com/' || 'http://localhost:3000');
+var socket = io.connect();
 
 /**
  * Tank

@@ -26,7 +26,7 @@ function setup() {
     canvas.parent("Container")
     socket = io.connect()
 
-    //socket = io.connect('https://guccitankgang888.herokuapp.com/' || 'http://localhost:3000');
+    //    socket = io.connect('https://bbtankshooter.herokuapp.com/' || 'http://localhost:3000');
     init();
 }
 /**
