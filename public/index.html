@@ -25,15 +25,25 @@
 <body>
     <section id="title">
         <div class=" container ">
-            <a href="" class="float-right" id="logout">logout</a>
-            <span class="">
+            <a style="padding-left: 10px" class="float-right" id="account">account </a>
+            <a style="padding-left: 10px" class="float-right" id="logout">logout</a>
+
+        </div>
+        <br>
+        <span class="">
                             <h1 style="padding-right: 22px">Tank Game </h1>
                             <p>Arrow keys to move, click to shoot!</p>
                     </span>
-            <p class="lead" id="matchup"></p>
+        <p class="lead" id="matchup"></p>
 
         </div>
     </section>
+    <!-- My Account Section for Keys -->
+    <section id="myAccount" style="display:none">
+        <label for="key">Your Key<input id="key" type="text" name="key"></label>
+        <button id="saveKeyBtn">Save Key</button>
+    </section>
+
     <!-- if not logged in -->
     <section id="authentication">
         <section id="login">

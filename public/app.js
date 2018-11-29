@@ -98,6 +98,36 @@ $(function() {
         firebase.auth().signOut()
     })
 
+    $("#account").on("click", a => {
+        $("#login").hide();
+        $("#start").hide()
+        $("#logout").hide();
+        $("#game").hide()
+        $("#myAccount").show();
+    })
+
+    $("#saveKeyBtn").on("click", a => {
+        var key = document.getElementById("key").value
+        $.ajax({
+            url: "api/1.0/updateToken",
+            type: "POST",
+            data: "asaldivar18",
+            contentType: "application/JSON",
+            headers: {
+                uid: auth.currentUser.uid,
+                token: key
+            },
+            success: (res) => {
+                if (res == "success") {
+                    $("#myAccount").hide()
+                    $("#start").show();
+                    $("#logout").show();
+                }
+                //$("#register").hide()
+            }
+        })
+    })
+
     firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
             $("#login").hide()

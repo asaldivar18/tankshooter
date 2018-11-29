@@ -80,6 +80,15 @@ router.post('/1.0/users', (req, res) => {
 
 })
 
+
+router.post('/1.0/updateToken', (req, res) => {
+    var headers = req.headers
+    console.log(headers.uid, headers.token)
+    var userDoc = db.collection("users").doc(req.headers.uid).update({
+        apptoken: headers.token
+    }).catch(e => res.send(e)).then(() => res.send("success"))
+})
+
 router.post('/1.0', (req, res) => {
     //console.log(req.headers, req.headers.kills)
 
