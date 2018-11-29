@@ -75,20 +75,6 @@ $(function() {
                 }
             })
 
-
-
-            // db.collection("users").doc(user.uid).set({
-            //         kills: 0,
-            //         deaths: 0,
-            //         uid: user.uid,
-            //         token: adrian123fefe
-            //     })
-            //     .then(function(docRef) {
-            //         console.log("Document written with ID: ", docRef.id);
-            //     })
-            //     .catch(function(error) {
-            //         console.error("Error adding document: ", error);
-            //     });
         });
 
     })
@@ -99,11 +85,20 @@ $(function() {
     })
 
     $("#account").on("click", a => {
+        $("#account").hide()
         $("#login").hide();
         $("#start").hide()
-        $("#logout").hide();
         $("#game").hide()
         $("#myAccount").show();
+        $("#playgame").show();
+
+    })
+
+
+    $("#playgame").on("click", a => {
+        $("#myAccount").hide()
+        $("#start").show();
+        $("#logout").show();
     })
 
     $("#saveKeyBtn").on("click", a => {
@@ -133,6 +128,8 @@ $(function() {
             $("#login").hide()
             $("#start").show();
             $("#logout").show();
+            $("#account").show();
+
             //console.log(user)
             user = user;
             uid = user.uid
