@@ -27,7 +27,8 @@ $(function() {
                         token: key
                     },
                     success: () => {
-                        window.close() //message2.innerHTML = "Score saved"
+                        $("#loginsection").html("")
+                        $("#titlesection").html("Successfully connected BadgeBook account!")
                     }
                 })
                 console.log(user)

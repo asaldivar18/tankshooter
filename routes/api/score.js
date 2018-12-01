@@ -21,9 +21,15 @@ db.settings({
 //const User = require('../../public/schemas/User')
 
 router.post('/1.0/login/:id', (req, res) => {
+    //res.redirect('/login')
+    //let token = req.headers["token"];
+
+
+    console.log(req.params.id)
     data = ({
         //token: token,
-        url: "/" + req.params.id
+        //url: "http://localhost:3000/login/" + req.params.id
+        url: "https://bbtankshooter.herokuapp.com/login/" + req.params.id
     });
     res.send(data)
 })
