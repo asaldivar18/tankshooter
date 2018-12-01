@@ -20,6 +20,14 @@ db.settings({
 
 //const User = require('../../public/schemas/User')
 
+router.post('/1.0/login/:id', (req, res) => {
+    data = ({
+        //token: token,
+        url: "/" + req.params.id
+    });
+    res.send(data)
+})
+
 
 /**
  * Get leaderboard

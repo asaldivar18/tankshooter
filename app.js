@@ -4,6 +4,7 @@ var http = require("http").Server(app);
 var io = require("socket.io")(http);
 //var room = require("./public/models/Room")
 var api = require("./routes/api/score")
+const path = require("path");
 
 
 var list = {}
@@ -14,11 +15,16 @@ app.use(function(req, res, next) {
     next();
 });
 app.use(express.static(__dirname + "/public"));
-app.get("/", function(req, res) {
-    res.sendFile(__dirname + "/index.html");
+
+app.get("/login/:id", function(req, res) {
+    console.log("hello")
+    res.sendFile(path.join(__dirname, "public/login.html"))
+
 })
 
+
 app.use('/api/', api)
+
 io.sockets.on('connection', socket => {
 
 
