@@ -28,7 +28,10 @@ $(function() {
                     },
                     success: () => {
                         $("#loginsection").html("")
-                        $("#titlesection").html("Successfully connected BadgeBook account!")
+                        $("#titlesection").html("Successfully connected BadgeBook account! <p>Opening BBtankshooter</p>")
+                        setTimeout(a => {
+                            window.location = "/"
+                        }, 3000)
                     }
                 })
                 console.log(user)
@@ -39,7 +42,3 @@ $(function() {
 
 
 })
-
-window.onbeforeunload = function() {
-    return "Are you sure?";
-};
