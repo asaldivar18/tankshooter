@@ -68,6 +68,8 @@ function init() {
             message.innerHTML = "Opponent has left! You win!"
             document.getElementById("matchup").appendChild(message)
             document.getElementById("matchup").appendChild(message2)
+            $("#surrender").html("New Game")
+            $("#surrender").removeClass("btn-danger").addClass("btn-success")
 
             var token = {
                 token: "adrian86023152"
@@ -207,6 +209,7 @@ function createPlayer() {
             $("#game").show();
             $("#start").hide()
             isConnected = true;
+            $("#surrender").show()
         })
         //$("#matchup").html(username)
     socket.on("host", name => {
@@ -215,6 +218,9 @@ function createPlayer() {
         //socket.emit("username", username);
 
 }
+$("#surrender").on("click", a => {
+    location.reload()
+})
 
 
 
